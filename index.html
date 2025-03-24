@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="https://vincenzoapp.github.io/Test01/icon.png">
+    <link rel="icon" sizes="192x192" href="https://vincenzoapp.github.io/Test01/icon-192x192.png">
+    <title>Juegos para Emelí</title>
+    <link rel="manifest" href="https://vincenzoapp.github.io/Test01/manifest.json">
+    <meta name="theme-color" content="#4CAF50">
+    <style>
+        html {
+            position: fixed;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        body {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            padding: 0 15px;
+        }
+        
+        .game-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 300px;
+            margin: 0 auto;
+            width: 90%;
+            padding: 0 15px;
+        }
+        
+        .game-btn {
+            background-color: #ff6347;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            font-weight: bold;
+            width: 100%;
+        }
+        
+        .game-btn:hover {
+            background-color: #e5533d;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+        
+        .game-btn:active {
+            transform: translateY(0);
+        }
+        
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        #offline-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .header-image {
+            width: 120px;
+            height: 120px;
+            margin: 20px auto;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ff6347;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        #install-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            display: none;
+            z-index: 1000;
+        }
+        
+        @media (max-width: 400px) {
+            .header-image {
+                width: 100px;
+                height: 100px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+            
+            .game-btn {
+                padding: 12px 20px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="offline-status">Modo offline</div>
+    <button id="install-btn" title="Instalar aplicación">+</button>
+    
+    <img src="https://vincenzoapp.github.io/Test01/icon.png" alt="Logo" class="header-image">
+    <h1>¡Elige un Juego!</h1>
+    
+    <div class="game-buttons">
+        <button class="game-btn" onclick="window.location.href='https://vincenzoapp.github.io/Test01/tris.html'">Tres en Raya</button>
+        <button class="game-btn" onclick="window.location.href='https://vincenzoapp.github.io/Test01/cuadrado.html'">Cuadrado Pillín</button>
+        <button class="game-btn" disabled>Próximamente...</button>
+    </div>
+    
+    <footer>
+        Creado con ❤️ para Emelí T
+    </footer>
+
+    <script>
+        // Verificar estado de conexión
+        function updateOnlineStatus() {
+            const offlineStatus = document.getElementById('offline-status');
+            if (navigator.onLine) {
+                offlineStatus.style.display = 'none';
+            } else {
+                offlineStatus.style.display = 'block';
+            }
+        }
+        
+        // Mostrar notificación de instalación
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('install-btn');
+            installBtn.style.display = 'block';
+            
+            installBtn.addEventListener('click', () => {
+                installBtn.style.display = 'none';
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Usuario aceptó instalar');
+                    } else {
+                        console.log('Usuario rechazó instalar');
+                    }
+                    deferredPrompt = null;
+                });
+            });
+        });
+        
+        window.addEventListener('appinstalled', () => {
+            console.log('App instalada');
+            document.getElementById('install-btn').style.display = 'none';
+        });
+        
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('https://vincenzoapp.github.io/Test01/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registrado con éxito');
+                        registration.update();
+                    })
+                    .catch(err => {
+                        console.log('Error al registrar ServiceWorker:', err);
+                    });
+            });
+        }
+        
+        // Event listeners para estado de conexión
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        
+        // Verificar si está en modo standalone
+        function isRunningStandalone() {
+            return (window.matchMedia('(display-mode: standalone)').matches || 
+                   window.navigator.standalone === true;
+        }
+        
+        // Si ya está instalada, ocultar el botón de instalación
+        if (isRunningStandalone()) {
+            document.getElementById('install-btn').style.display = 'none';
+        }
+        
+        // Prevenir zoom con gestos
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
+        // Prevenir zoom con doble toque
+        let lastTouchTime = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchTime <= 300) {
+                event.preventDefault();
+            }
+            lastTouchTime = now;
+        }, { passive: false });
+
+        // Prevenir scroll completamente
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+        
+        // Prevenir cualquier tipo de scroll
+        document.addEventListener('scroll', function(e) {
+            window.scrollTo(0, 0);
+        });
+        
+        // Asegurarse que la página no se mueva al cargar
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                window.scrollTo(0, 0);
+                document.body.style.overflow = 'hidden';
+                document.documentElement.style.overflow = 'hidden';
+            }, 0);
+        });
+        
+        // Inicializar
+        updateOnlineStatus();
+        window.scrollTo(0, 0);
+    </script>
+</body>
+</html>
