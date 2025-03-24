@@ -1,18 +1,18 @@
 const CACHE_NAME = 'juegos-emeli-v3';
 const ASSETS_TO_CACHE = [
-  '/Test01/',
-  '/Test01/index.html',
-  '/Test01/tris.html',
-  '/Test01/cuadrado.html',
-  '/Test01/icon.png',
-  '/Test01/icon-72x72.png',
-  '/Test01/icon-96x96.png',
-  '/Test01/icon-128x128.png',
-  '/Test01/icon-144x144.png',
-  '/Test01/icon-192x192.png',
-  '/Test01/icon-512x512.png',
+  '//',
+  '//index.html',
+  '/Test03/tris.html',
+  '/Test03/cuadrado.html',
+  '/Test03/icon.png',
+  '/Test03/icon-72x72.png',
+  '/Test03/icon-96x96.png',
+  '/Test03/icon-128x128.png',
+  '/Test03/icon-144x144.png',
+  '/Test03/icon-192x192.png',
+  '/Test03/icon-512x512.png',
   'https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.2/dist/confetti.browser.min.js',
-  '/Test01/manifest.json'
+  '/Test03/manifest.json'
 ];
 
 // Instalación y cacheo de recursos
@@ -65,7 +65,7 @@ self.addEventListener('fetch', (event) => {
       .catch(() => {
         // Fallback para páginas HTML
         if (event.request.headers.get('accept').includes('text/html')) {
-          return caches.match('/Test01/index.html');
+          return caches.match('/Test03/index.html');
         }
       })
   );
