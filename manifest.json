@@ -2,45 +2,45 @@
   "name": "Juegos para Emelí",
   "short_name": "Juegos Emelí",
   "description": "Juegos divertidos sin conexión",
-  "start_url": "https://vincenzoapp.github.io/Test01/index.html",
-  "scope": "https://vincenzoapp.github.io/Test01/",
+  "start_url": "https://vincenzoapp.github.io/Test03/index.html",
+  "scope": "https://vincenzoapp.github.io/Test03/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#ff6347",
   "icons": [
     {
-      "src": "https://vincenzoapp.github.io/Test01/icon-72x72.png",
+      "src": "https://vincenzoapp.github.io/Test03/icon-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://vincenzoapp.github.io/Test01/icon-96x96.png",
+      "src": "https://vincenzoapp.github.io/Test03/icon-96x96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://vincenzoapp.github.io/Test01/icon-128x128.png",
+      "src": "https://vincenzoapp.github.io/Test03/icon-128x128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://vincenzoapp.github.io/Test01/icon-144x144.png",
+      "src": "https://vincenzoapp.github.io/Test03/icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://vincenzoapp.github.io/Test01/icon-192x192.png",
+      "src": "https://vincenzoapp.github.io/Test03/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://vincenzoapp.github.io/Test01/icon-512x512.png",
+      "src": "https://vincenzoapp.github.io/Test03/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -53,18 +53,18 @@
     {
       "name": "Tres en Raya",
       "short_name": "Tris",
-      "url": "https://vincenzoapp.github.io/Test01/tris.html",
+      "url": "https://vincenzoapp.github.io/Test03/tris.html",
       "icons": [{
-        "src": "https://vincenzoapp.github.io/Test01/icon-96x96.png",
+        "src": "https://vincenzoapp.github.io/Test03/icon-96x96.png",
         "sizes": "96x96"
       }]
     },
     {
       "name": "Cuadrado Pillín",
       "short_name": "Cuadrado",
-      "url": "https://vincenzoapp.github.io/Test01/cuadrado.html",
+      "url": "https://vincenzoapp.github.io/Test03/cuadrado.html",
       "icons": [{
-        "src": "https://vincenzoapp.github.io/Test01/icon-96x96.png",
+        "src": "https://vincenzoapp.github.io/Test03/icon-96x96.png",
         "sizes": "96x96"
       }]
     }
