@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <title>Cuadrado Pillín</title>
-    <link rel="manifest" href="https://vincenzoapp.github.io/Test01/manifest.json">
+    <link rel="manifest" href="https://vincenzoapp.github.io/Test03/manifest.json">
     <meta name="theme-color" content="#007bff">
     <style>
         html {
@@ -161,7 +161,7 @@
         
         <div id="buttons-container">
             <button id="restart-btn" class="game-btn">Reiniciar Juego</button>
-            <button id="back-btn" class="game-btn" onclick="window.location.href='https://vincenzoapp.github.io/Test01/index.html'">Volver al Menú</button>
+            <button id="back-btn" class="game-btn" onclick="window.location.href='https://vincenzoapp.github.io/Test03/index.html'">Volver al Menú</button>
         </div>
     </div>
 
@@ -286,7 +286,7 @@
         // Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('https://vincenzoapp.github.io/Test01/sw.js')
+                navigator.serviceWorker.register('https://vincenzoapp.github.io/Test03/sw.js')
                     .then(reg => console.log('Service Worker registrado'))
                     .catch(err => console.log('Error al registrar SW:', err));
             });
