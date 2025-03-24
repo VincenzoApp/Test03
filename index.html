@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
@@ -12,22 +12,18 @@
     <link rel="manifest" href="https://vincenzoapp.github.io/Test01/manifest.json">
     <meta name="theme-color" content="#4CAF50">
     <style>
-        html {
-            position: fixed;
-            height: 100%;
-            width: 100%;
+        html, body {
             overflow: hidden;
-            touch-action: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            touch-action: manipulation;
+            margin: 0;
+            padding: 0;
             -webkit-overflow-scrolling: touch;
         }
         
         body {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            margin: 0;
-            padding: 0;
             font-family: 'Arial', sans-serif;
             text-align: center;
             background-color: #f4f4f9;
@@ -35,7 +31,12 @@
             flex-direction: column;
             background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             -webkit-tap-highlight-color: transparent;
-            overscroll-behavior: none;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
         }
         
         h1 {
@@ -53,6 +54,7 @@
             margin: 0 auto;
             width: 90%;
             padding: 0 15px;
+            touch-action: manipulation;
         }
         
         .game-btn {
@@ -67,6 +69,7 @@
             box-shadow: 0 3px 6px rgba(0,0,0,0.1);
             font-weight: bold;
             width: 100%;
+            touch-action: manipulation;
         }
         
         .game-btn:hover {
@@ -124,6 +127,7 @@
             cursor: pointer;
             display: none;
             z-index: 1000;
+            touch-action: manipulation;
         }
         
         @media (max-width: 400px) {
@@ -143,14 +147,13 @@
             }
         }
     </style>
-    <script src="lock-scroll.js"></script>
 </head>
 <body>
     <div id="offline-status">Modo offline</div>
     <button id="install-btn" title="Instalar aplicación">+</button>
     
     <img src="https://vincenzoapp.github.io/Test01/icon.png" alt="Logo" class="header-image">
-    <h1>¡Elige un Juegox!</h1>
+    <h1>¡Elige un Juego!</h1>
     
     <div class="game-buttons">
         <button class="game-btn" onclick="window.location.href='https://vincenzoapp.github.io/Test01/tris.html'">Tres en Raya</button>
@@ -221,51 +224,9 @@
         // Verificar si está en modo standalone
         function isRunningStandalone() {
             return (window.matchMedia('(display-mode: standalone)').matches || 
-                   window.navigator.standalone === true;
+                   window.navigator.standalone === true);
         }
         
         // Si ya está instalada, ocultar el botón de instalación
         if (isRunningStandalone()) {
-            document.getElementById('install-btn').style.display = 'none';
-        }
-        
-        // Prevenir zoom con gestos
-        document.addEventListener('gesturestart', function(e) {
-            e.preventDefault();
-        });
-
-        // Prevenir zoom con doble toque
-        let lastTouchTime = 0;
-        document.addEventListener('touchend', function(event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchTime <= 300) {
-                event.preventDefault();
-            }
-            lastTouchTime = now;
-        }, { passive: false });
-
-        // Prevenir scroll completamente
-        document.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-        }, { passive: false });
-        
-        // Prevenir cualquier tipo de scroll
-        document.addEventListener('scroll', function(e) {
-            window.scrollTo(0, 0);
-        });
-        
-        // Asegurarse que la página no se mueva al cargar
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                window.scrollTo(0, 0);
-                document.body.style.overflow = 'hidden';
-                document.documentElement.style.overflow = 'hidden';
-            }, 0);
-        });
-        
-        // Inicializar
-        updateOnlineStatus();
-        window.scrollTo(0, 0);
-    </script>
-</body>
-</html>
+            document.getElementById('install
