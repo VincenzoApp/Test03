@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Cuadrado Pillín</title>
+    <link rel="manifest" href="https://vincenzoapp.github.io/Test01/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <style>
+        html {
+            position: fixed;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        body {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            margin: 20px;
+        }
+
+        #gameArea {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background-color: #e0e0e0;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        #square {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: #007bff;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #score, #timer {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .game-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        #restart-btn {
+            background-color: #ff6347;
+            color: white;
+        }
+
+        #restart-btn:hover {
+            background-color: #e5533d;
+        }
+
+        #back-btn {
+            background-color: #ff6347;
+            color: white;
+        }
+
+        #back-btn:hover {
+            background-color: #e5533d;
+        }
+
+        #buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        #offline-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: none;
+            z-index: 100;
+        }
+        
+        @media (max-height: 700px) {
+            #gameArea {
+                height: 300px;
+            }
+        }
+        
+        @media (max-height: 500px) {
+            #gameArea {
+                height: 200px;
+            }
+            
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+            
+            #score, #timer {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="offline-status">Modo offline</div>
+    
+    <div class="container">
+        <h1>Cuadrado Pillín</h1>
+        <p>¡Atrapa el cuadrado lo más rápido que puedas en 30 segundos!</p>
+        <div id="gameArea">
+            <div id="square"></div>
+        </div>
+        <p id="score">Puntos: 0</p>
+        <p id="timer">Tiempo: 30s</p>
+        
+        <div id="buttons-container">
+            <button id="restart-btn" class="game-btn">Reiniciar Juego</button>
+            <button id="back-btn" class="game-btn" onclick="window.location.href='https://vincenzoapp.github.io/Test01/index.html'">Volver al Menú</button>
+        </div>
+    </div>
+
+    <script>
+        const square = document.getElementById('square');
+        const gameArea = document.getElementById('gameArea');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        let score = 0;
+        let timeLeft = 30;
+        let timer;
+        let gameStarted = false;
+        let blinkInterval;
+
+        // Detección de conexión
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+
+        function updateOnlineStatus() {
+            document.getElementById('offline-status').style.display = navigator.onLine ? 'none' : 'block';
+        }
+
+        function moveSquare() {
+            const maxX = gameArea.offsetWidth - square.offsetWidth;
+            const maxY = gameArea.offsetHeight - square.offsetHeight;
+            const x = Math.random() * maxX;
+            const y = Math.random() * maxY;
+            square.style.left = `${x}px`;
+            square.style.top = `${y}px`;
+        }
+
+        function startBlinking() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            let index = 0;
+            blinkInterval = setInterval(() => {
+                square.style.backgroundColor = colors[index];
+                index = (index + 1) % colors.length;
+            }, 500);
+        }
+
+        function stopBlinking() {
+            clearInterval(blinkInterval);
+        }
+
+        function resetGameState() {
+            clearInterval(timer);
+            stopBlinking();
+            score = 0;
+            timeLeft = 30;
+            gameStarted = false;
+            scoreDisplay.textContent = `Puntos: ${score}`;
+            timerDisplay.textContent = `Tiempo: ${timeLeft}s`;
+            square.style.display = 'block';
+            square.style.backgroundColor = '#007bff';
+            square.style.width = '50px';
+            square.style.height = '50px';
+            moveSquare();
+        }
+
+        function startGame() {
+            if (gameStarted) return;
+            
+            gameStarted = true;
+            score = 0;
+            timeLeft = 30;
+            scoreDisplay.textContent = `Puntos: ${score}`;
+            timerDisplay.textContent = `Tiempo: ${timeLeft}s`;
+            square.style.display = 'block';
+            square.style.backgroundColor = '#007bff';
+            square.style.width = '50px';
+            square.style.height = '50px';
+            moveSquare();
+
+            timer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `Tiempo: ${timeLeft}s`;
+
+                if (timeLeft === 20) {
+                    square.style.backgroundColor = '#ff8c42';
+                    square.style.width = '40px';
+                    square.style.height = '40px';
+                }
+
+                if (timeLeft === 10) {
+                    square.style.backgroundColor = '#808080';
+                    square.style.width = '30px';
+                    square.style.height = '30px';
+                }
+
+                if (timeLeft === 5) {
+                    startBlinking();
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    stopBlinking();
+                    square.style.display = 'none';
+                    setTimeout(() => {
+                        alert(`¡Tiempo acabado! Puntuación: ${score}`);
+                    }, 100);
+                }
+            }, 1000);
+        }
+
+        // Event Listeners
+        square.addEventListener('click', () => {
+            if (!gameStarted) {
+                startGame();
+            }
+            if (timeLeft > 0) {
+                score++;
+                scoreDisplay.textContent = `Puntos: ${score}`;
+                moveSquare();
+            }
+        });
+
+        restartBtn.addEventListener('click', resetGameState);
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('https://vincenzoapp.github.io/Test01/sw.js')
+                    .then(reg => console.log('Service Worker registrado'))
+                    .catch(err => console.log('Error al registrar SW:', err));
+            });
+        }
+
+        // Inicialización
+        resetGameState();
+        
+        // Prevenir zoom en dispositivos móviles
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+        
+        // Prevenir doble tap para zoom
+        let lastTouchTime = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchTime <= 300) {
+                event.preventDefault();
+            }
+            lastTouchTime = now;
+        }, false);
+        
+        // Prevenir scroll completamente
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+        
+        // Prevenir cualquier tipo de scroll
+        document.addEventListener('scroll', function(e) {
+            window.scrollTo(0, 0);
+        });
+        
+        // Asegurarse que la página no se mueva al cargar
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                window.scrollTo(0, 0);
+                document.body.style.overflow = 'hidden';
+                document.documentElement.style.overflow = 'hidden';
+            }, 0);
+        });
+        
+        // Inicializar posición
+        window.scrollTo(0, 0);
+    </script>
+</body>
+</html>
