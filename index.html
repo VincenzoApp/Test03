@@ -6,10 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="https://vincenzoapp.github.io/Test01/icon.png">
-    <link rel="icon" sizes="192x192" href="https://vincenzoapp.github.io/Test01/icon-192x192.png">
+    <link rel="apple-touch-icon" href="https://vincenzoapp.github.io/Test03/icon.png">
+    <link rel="icon" sizes="192x192" href="https://vincenzoapp.github.io/Test03/icon-192x192.png">
     <title>Juegos para Emelí</title>
-    <link rel="manifest" href="https://vincenzoapp.github.io/Test01/manifest.json">
+    <link rel="manifest" href="https://vincenzoapp.github.io/Test03/manifest.json">
     <meta name="theme-color" content="#4CAF50">
     <style>
         html, body {
@@ -152,7 +152,7 @@
     <div id="offline-status">Modo offline</div>
     <button id="install-btn" title="Instalar aplicación">+</button>
     
-    <img src="https://vincenzoapp.github.io/Test01/icon.png" alt="Logo" class="header-image">
+    <img src="https://vincenzoapp.github.io/Test03/icon.png" alt="Logo" class="header-image">
     <h1>¡Elige un Juego!</h1>
     
     <div class="game-buttons">
@@ -206,7 +206,7 @@
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('https://vincenzoapp.github.io/Test01/sw.js')
+                navigator.serviceWorker.register('https://vincenzoapp.github.io/Test03/sw.js')
                     .then(registration => {
                         console.log('ServiceWorker registrado con éxito');
                         registration.update();
