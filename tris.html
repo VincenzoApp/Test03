@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Tres en Raya</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.2/dist/confetti.browser.min.js"></script>
+    <link rel="manifest" href="https://vincenzoapp.github.io/Test01/manifest.json">
+    <meta name="theme-color" content="#ff6347">
+    <style>
+        html {
+            position: fixed;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        body {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overscroll-behavior: none;
+        }
+        
+        h1 {
+            color: #333;
+            margin-top: 20px;
+            padding: 0 15px;
+        }
+        
+        #game-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 80px;
+            overflow: hidden;
+        }
+        
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(80px, 1fr));
+            grid-template-rows: repeat(3, minmax(80px, 1fr));
+            gap: 5px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 315px;
+            touch-action: manipulation;
+        }
+        
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            border: 2px solid #3333334a;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            aspect-ratio: 1 / 1;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        .winning-cell {
+            background-color: lightgreen !important;
+        }
+        
+        .last-move {
+            background-color: lightgray !important;
+        }
+        
+        .draw-cell {
+            background-color: rgba(255, 255, 0, 0.299) !important;
+            transition: background-color 0.5s ease-in-out;
+        }
+        
+        #buttons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        #reset-btn, #menu-btn {
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: #ff6347;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 200px;
+        }
+        
+        #reset-btn:hover, #menu-btn:hover {
+            background-color: #e5533d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        #scoreboard {
+            width: 100%;
+            background-color: white;
+            padding: 12px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 18px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+        }
+        
+        .score {
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            background-color: #f8f8f8;
+        }
+        
+        #mode-select {
+            margin: 15px 0;
+        }
+        
+        .btn {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4caf4f00;
+            color: #ff6347;
+            border: solid 1px #ff6347;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #ff6347;
+            color: white;
+        }
+        
+        .btn.selected {
+            background-color: #ff6347;
+            color: white;
+        }
+        
+        #aiDifficultySelection {
+            display: none;
+            margin: 15px 0;
+        }
+        
+        #offline-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: none;
+            z-index: 100;
+        }
+        
+        @media (max-width: 400px) {
+            .btn {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+            
+            #reset-btn, #menu-btn {
+                width: 160px;
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            
+            .score {
+                padding: 6px 10px;
+                font-size: 16px;
+            }
+            
+            #game-board {
+                max-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="offline-status">Modo offline</div>
+    <h1>Tres en Raya</h1>
+
+    <div id="mode-select">
+        <button class="btn selected" id="mode-1v1" onclick="setGameMode('1v1')">1 vs 1</button>
+        <button class="btn" id="mode-1vAI" onclick="setGameMode('1vAI')">1 vs IA</button>
+    </div>
+
+    <div id="aiDifficultySelection">
+        <button class="btn" id="difficulty-easy" onclick="setDifficulty('easy')">Fácil</button>
+        <button class="btn selected" id="difficulty-medium" onclick="setDifficulty('medium')">Intermedio</button>
+        <button class="btn" id="difficulty-hard" onclick="setDifficulty('hard')">Difícil</button>
+    </div>
+
+    <div id="game-container">
+        <div id="game-board">
+            <div class="cell" onclick="makeMove(0)"></div>
+            <div class="cell" onclick="makeMove(1)"></div>
+            <div class="cell" onclick="makeMove(2)"></div>
+            <div class="cell" onclick="makeMove(3)"></div>
+            <div class="cell" onclick="makeMove(4)"></div>
+            <div class="cell" onclick="makeMove(5)"></div>
+            <div class="cell" onclick="makeMove(6)"></div>
+            <div class="cell" onclick="makeMove(7)"></div>
+            <div class="cell" onclick="makeMove(8)"></div>
+        </div>
+
+        <div id="buttons-container">
+            <button id="reset-btn" onclick="resetGame()">Reiniciar Juego</button>
+            <button id="menu-btn" onclick="window.location.href='https://vincenzoapp.github.io/Test01/index.html'">Volver al Menú</button>
+        </div>
+    </div>
+
+    <div id="scoreboard">
+        <div class="score"><span id="player1Label">X</span>: <span id="scoreX">0</span></div>
+        <div class="score">Empates: <span id="scoreDraws">0</span></div>
+        <div class="score"><span id="player2Label">O</span>: <span id="scoreO">0</span></div>
+    </div>
+
+    <script>
+        // Variables del juego
+        let currentPlayer = 'X';
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let gameOver = false;
+        let scoreX = 0;
+        let scoreO = 0;
+        let scoreDraws = 0;
+        let lastMoveIndex = null;
+        let gameMode = '1v1';
+        let difficulty = 'medium';
+        let lastWinner = null;
+
+        // Inicialización
+        loadScores();
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+
+        // Funciones principales
+        function updateOnlineStatus() {
+            document.getElementById('offline-status').style.display = navigator.onLine ? 'none' : 'block';
+        }
+
+        function saveScores() {
+            localStorage.setItem('tresEnRayaScores', JSON.stringify({
+                scoreX: scoreX,
+                scoreO: scoreO,
+                scoreDraws: scoreDraws
+            }));
+        }
+
+        function loadScores() {
+            const savedScores = localStorage.getItem('tresEnRayaScores');
+            if (savedScores) {
+                const scores = JSON.parse(savedScores);
+                scoreX = scores.scoreX;
+                scoreO = scores.scoreO;
+                scoreDraws = scores.scoreDraws;
+                updateScoreDisplays();
+            }
+        }
+
+        function updateScoreDisplays() {
+            document.getElementById('scoreX').textContent = scoreX;
+            document.getElementById('scoreO').textContent = scoreO;
+            document.getElementById('scoreDraws').textContent = scoreDraws;
+        }
+
+        function setGameMode(mode) {
+            gameMode = mode;
+            resetGame();
+            document.getElementById('mode-1v1').classList.toggle('selected', mode === '1v1');
+            document.getElementById('mode-1vAI').classList.toggle('selected', mode === '1vAI');
+            document.getElementById('aiDifficultySelection').style.display = mode === '1vAI' ? 'block' : 'none';
+            document.getElementById('player1Label').textContent = mode === '1vAI' ? 'Tú' : 'X';
+            document.getElementById('player2Label').textContent = mode === '1vAI' ? 'IA' : 'O';
+        }
+
+        function setDifficulty(diff) {
+            difficulty = diff;
+            document.getElementById('difficulty-easy').classList.toggle('selected', diff === 'easy');
+            document.getElementById('difficulty-medium').classList.toggle('selected', diff === 'medium');
+            document.getElementById('difficulty-hard').classList.toggle('selected', diff === 'hard');
+            resetGame();
+        }
+
+        function resetGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('last-move', 'winning-cell');
+            });
+            gameOver = false;
+            currentPlayer = lastWinner === 'X' ? 'X' : lastWinner === 'O' ? 'O' : currentPlayer;
+            if (gameMode === '1vAI' && currentPlayer === 'O') setTimeout(aiMove, 500);
+        }
+
+        function makeMove(index) {
+            if (board[index] === '' && !gameOver) {
+                if (lastMoveIndex !== null) {
+                    document.getElementsByClassName('cell')[lastMoveIndex].classList.remove('last-move');
+                }
+
+                board[index] = currentPlayer;
+                const cell = document.getElementsByClassName('cell')[index];
+                cell.textContent = currentPlayer;
+                cell.classList.add('last-move');
+                lastMoveIndex = index;
+
+                if (checkWinner()) {
+                    updateScore(currentPlayer);
+                    lastWinner = currentPlayer;
+                    gameOver = true;
+                    shootConfetti();
+                } else if (board.every(cell => cell !== '')) {
+                    scoreDraws++;
+                    document.getElementById('scoreDraws').textContent = scoreDraws;
+                    lastWinner = null;
+                    gameOver = true;
+                    animateDraw();
+                    saveScores();
+                } else {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                    if (gameMode === '1vAI' && currentPlayer === 'O') setTimeout(aiMove, 500);
+                }
+            }
+        }
+
+        function aiMove() {
+            const availableMoves = board.map((cell, index) => cell === '' ? index : -1).filter(i => i !== -1);
+            if (availableMoves.length === 0) return;
+
+            let move;
+            if (difficulty === 'easy') {
+                move = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+            } else if (difficulty === 'medium') {
+                move = getMediumMove(availableMoves);
+            } else {
+                move = minimax(board, 'O').index;
+            }
+            makeMove(move);
+        }
+
+        function getMediumMove(availableMoves) {
+            for (const move of availableMoves) {
+                board[move] = 'O';
+                if (checkWinnerForPlayer(board, 'O')) {
+                    board[move] = '';
+                    return move;
+                }
+                board[move] = 'X';
+                if (checkWinnerForPlayer(board, 'X')) {
+                    board[move] = '';
+                    return move;
+                }
+                board[move] = '';
+            }
+            return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+        }
+
+        function minimax(board, player) {
+            const opponent = player === 'X' ? 'O' : 'X';
+            const availableMoves = board.map((cell, i) => cell === '' ? i : -1).filter(i => i !== -1);
+
+            if (checkWinnerForPlayer(board, 'X')) return { score: -10 };
+            if (checkWinnerForPlayer(board, 'O')) return { score: 10 };
+            if (availableMoves.length === 0) return { score: 0 };
+
+            const moves = [];
+            for (const move of availableMoves) {
+                board[move] = player;
+                const result = minimax(board, opponent);
+                moves.push({ index: move, score: result.score });
+                board[move] = '';
+            }
+
+            return player === 'O' 
+                ? moves.reduce((best, current) => current.score > best.score ? current : best, { score: -Infinity })
+                : moves.reduce((best, current) => current.score < best.score ? current : best, { score: Infinity });
+        }
+
+        function checkWinner() {
+            const winningCombos = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for (const combo of winningCombos) {
+                const [a, b, c] = combo;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    highlightWinningCells(combo);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkWinnerForPlayer(board, player) {
+            const winningCombos = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return winningCombos.some(([a, b, c]) => board[a] === player && board[b] === player && board[c] === player);
+        }
+
+        function highlightWinningCells(combo) {
+            combo.forEach(i => {
+                const cell = document.getElementsByClassName('cell')[i];
+                cell.classList.add('winning-cell');
+                if (i === lastMoveIndex) cell.classList.remove('last-move');
+            });
+        }
+
+        function updateScore(winner) {
+            winner === 'X' ? scoreX++ : scoreO++;
+            document.getElementById(winner === 'X' ? 'scoreX' : 'scoreO').textContent = winner === 'X' ? scoreX : scoreO;
+            saveScores();
+        }
+
+        function shootConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            }
+        }
+
+        function animateDraw() {
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.classList.add('draw-cell');
+                setTimeout(() => cell.classList.remove('draw-cell'), 500);
+            });
+        }
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('https://vincenzoapp.github.io/Test01/sw.js')
+                    .then(reg => console.log('Service Worker registrado'))
+                    .catch(err => console.log('Error al registrar SW:', err));
+            });
+        }
+        
+        // Prevenir zoom con gestos
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+        
+        // Prevenir zoom con doble toque
+        let lastTouchTime = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchTime <= 300) {
+                event.preventDefault();
+            }
+            lastTouchTime = now;
+        }, { passive: false });
+        
+        // Prevenir scroll completamente
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+        
+        // Prevenir cualquier tipo de scroll
+        document.addEventListener('scroll', function(e) {
+            window.scrollTo(0, 0);
+        });
+        
+        // Asegurarse que la página no se mueva al cargar
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                window.scrollTo(0, 0);
+                document.body.style.overflow = 'hidden';
+                document.documentElement.style.overflow = 'hidden';
+            }, 0);
+        });
+        
+        // Inicializar posición
+        window.scrollTo(0, 0);
+    </script>
+</body>
+</html>
