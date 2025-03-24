@@ -229,4 +229,31 @@
         
         // Si ya está instalada, ocultar el botón de instalación
         if (isRunningStandalone()) {
-            document.getElementById('install
+            document.getElementById('install-btn').style.display = 'none';
+        }
+        
+        // Prevenir zoom con gestos
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
+        // Prevenir zoom con doble toque
+        let lastTouchTime = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchTime <= 300) {
+                event.preventDefault();
+            }
+            lastTouchTime = now;
+        }, { passive: false });
+
+        // Prevenir scroll en iOS
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+        
+        // Inicializar
+        updateOnlineStatus();
+    </script>
+</body>
+</html>
