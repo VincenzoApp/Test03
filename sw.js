@@ -4,6 +4,7 @@ const ASSETS_TO_CACHE = [
   '//index.html',
   '/Test03/tris.html',
   '/Test03/cuadrado.html',
+  '/SerpienteV2/index.html'
   '/Test03/icon.png',
   '/Test03/icon-72x72.png',
   '/Test03/icon-96x96.png',
