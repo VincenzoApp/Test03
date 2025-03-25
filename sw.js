@@ -1,7 +1,7 @@
-const CACHE_NAME = 'juegos-emeli-v3';
+const CACHE_NAME = 'juegos-para-el-rato';
 const ASSETS_TO_CACHE = [
-  '//',
-  '//index.html',
+  '/',
+  '/index.html',
   '/Test03/tris.html',
   '/Test03/cuadrado.html',
   '/SerpienteV2/index.html',
@@ -16,7 +16,7 @@ const ASSETS_TO_CACHE = [
   '/Test03/manifest.json'
 ];
 
-// Instalación y cacheo de recursos
+// ✅ 1. Instalación y cacheo de recursos
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -27,7 +27,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Limpieza de caches antiguos
+// ✅ 2. Limpieza de caches antiguos
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -42,9 +42,9 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Estrategia Cache-First con fallback a network
+// ✅ 3. Estrategia Cache-First con fallback a network
 self.addEventListener('fetch', (event) => {
-  // Excluir las peticiones a confetti.js para que siempre use la versión en línea
+  // Excluir confetti.js para que siempre use la versión en línea
   if (event.request.url.includes('confetti.browser.min.js')) {
     return fetch(event.request);
   }
@@ -66,15 +66,46 @@ self.addEventListener('fetch', (event) => {
       .catch(() => {
         // Fallback para páginas HTML
         if (event.request.headers.get('accept').includes('text/html')) {
-          return caches.match('/Test03/index.html');
+          return caches.match('/index.html'); // Asegúrate de que esta ruta sea correcta
         }
       })
   );
 });
 
-// Manejo de actualizaciones en segundo plano
+// ✅ 4. Manejo de actualizaciones en segundo plano
 self.addEventListener('message', (event) => {
   if (event.data.action === 'skipWaiting') {
     self.skipWaiting();
+  }
+});
+
+// 🚀 5. Forzar modo standalone en iOS y Android
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  if (url.pathname === '/' || url.pathname === '/index.html') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Inyectar metatags para iOS si es necesario
+          if (response.headers.get('content-type').includes('text/html')) {
+            return response.text()
+              .then((html) => {
+                const modifiedHtml = html.replace(
+                  '<head>',
+                  `<head>
+                    <meta name="apple-mobile-web-app-capable" content="yes">
+                    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+                    <meta name="mobile-web-app-capable" content="yes">
+                  `
+                );
+                return new Response(modifiedHtml, {
+                  headers: response.headers
+                });
+              });
+          }
+          return response;
+        })
+        .catch(() => caches.match('/index.html'))
+    );
   }
 });
