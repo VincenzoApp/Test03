@@ -1,7 +1,7 @@
 {
-  "name": "Juegos para Emelí",
-  "short_name": "Juegos Emelí",
-  "description": "Juegos divertidos sin conexión",
+  "name": "Juegos para pasar el rato",
+  "short_name": "Solo un Rato",
+  "description": "Juegos divertidos con y sin conexión",
   "start_url": "https://vincenzoapp.github.io/Test03/index.html",
   "scope": "https://vincenzoapp.github.io/Test03/",
   "display": "standalone",
