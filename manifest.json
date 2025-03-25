@@ -67,6 +67,15 @@
         "src": "https://vincenzoapp.github.io/Test03/icon-96x96.png",
         "sizes": "96x96"
       }]
+    },
+        {
+      "name": "Serpiente",
+      "short_name": "Serpiente",
+      "url": "https://vincenzoapp.github.io/SerpienteV2/",
+      "icons": [{
+        "src": "https://vincenzoapp.github.io/Test03/icon-96x96.png",
+        "sizes": "96x96"
+      }]
     }
   ]
 }
