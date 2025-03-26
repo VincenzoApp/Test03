@@ -73,6 +73,26 @@
             text-align: center;
         }
         
+        #score.gain {
+            color: #4CAF50;
+            animation: highlightGain 0.5s ease-out;
+        }
+        
+        #score.loss {
+            color: #f44336;
+            animation: highlightLoss 0.5s ease-out;
+        }
+        
+        @keyframes highlightGain {
+            0% { color: #4CAF50; transform: scale(1.5); }
+            100% { color: white; transform: scale(1); }
+        }
+        
+        @keyframes highlightLoss {
+            0% { color: #f44336; transform: scale(1.5); }
+            100% { color: white; transform: scale(1); }
+        }
+        
         #game-over {
             position: absolute;
             top: 50%;
@@ -216,10 +236,11 @@
         const startScreen = document.getElementById('start-screen');
         const startBtn = document.getElementById('start-btn');
         
-        // Costantes de juego
+        // Constantes de juego
         const SNAKE_SPEED = 10;
-        const GRID_COLS = 20;  // 20 columnas horizontales
-        const GRID_ROWS = 32;   // 32 filas verticales
+        const GRID_COLS = 20;
+        const GRID_ROWS = 32;
+        const INSECT_SPAWN_CHANCE = 0.35;
         
         // Variables de estado
         let box, canvasWidth, canvasHeight;
@@ -233,6 +254,8 @@
         let gameOver = false;
         let gameStarted = false;
         let lastRenderTime = 0;
+        let butterfly = null;
+        let lastScoreChangeTime = 0;
 
         // Inicialización del juego
         function initGame() {
@@ -246,21 +269,17 @@
             const containerWidth = Math.min(container.clientWidth, 500);
             const containerHeight = Math.min(container.clientHeight, 800);
             
-            // Calcular el tamaño de la celda para mantenerlas cuadradas
             const boxWidth = Math.floor(containerWidth / GRID_COLS);
             const boxHeight = Math.floor(containerHeight / GRID_ROWS);
             box = Math.min(boxWidth, boxHeight);
             
-            // Recalcular dimensiones del canvas manteniendo la proporción 20:32
             canvas.width = box * GRID_COLS;
             canvas.height = box * GRID_ROWS;
             
-            // Centrar el canvas horizontalmente
             canvas.style.margin = '0 auto';
         }
         
         function setupGameElements() {            
-            // Inicializar serpiente al centro
             const startX = Math.floor(GRID_COLS / 3);
             const startY = Math.floor(GRID_ROWS / 2);
             
@@ -274,6 +293,7 @@
             nextDirection = 'RIGHT';
             food = createFood();
             specialFood = null;
+            butterfly = null;
             score = 0;
             gameOver = false;
             
@@ -306,6 +326,11 @@
                     overlapping = overlapping || 
                         (newFood.x === specialFood.x && newFood.y === specialFood.y);
                 }
+                
+                if (butterfly) {
+                    overlapping = overlapping || 
+                        (newFood.x === butterfly.x && newFood.y === butterfly.y);
+                }
             } while (overlapping);
             
             return newFood;
@@ -328,12 +353,18 @@
                         x: Math.random() > 0.5 ? 1 : -1,
                         y: Math.random() > 0.5 ? 1 : -1
                     },
-                    lastMoveTime: Date.now()
+                    lastMoveTime: Date.now(),
+                    transformed: false
                 };
                 
                 overlapping = snake.some(segment => 
                     segment.x === newSpecialFood.x && segment.y === newSpecialFood.y
                 ) || (food.x === newSpecialFood.x && food.y === newSpecialFood.y);
+                
+                if (butterfly) {
+                    overlapping = overlapping || 
+                        (newSpecialFood.x === butterfly.x && newSpecialFood.y === butterfly.y);
+                }
             } while (overlapping);
             
             return newSpecialFood;
@@ -359,7 +390,6 @@
                 let newX = specialFood.x + specialFood.moveDirection.x * box;
                 let newY = specialFood.y + specialFood.moveDirection.y * box;
                 
-                // Boundary checks con margen de 1 box
                 if (newX < box) {
                     newX = box;
                     specialFood.moveDirection.x = 1;
@@ -381,6 +411,52 @@
             }
         }
         
+        function moveButterfly() {
+            if (!butterfly) return;
+            
+            const now = Date.now();
+            const timeSinceSpawn = now - butterfly.spawnTime;
+            
+            // Changed from 3000 to 7000 (7 seconds)
+            if (timeSinceSpawn > 7000) {
+                butterfly = null;
+                return;
+            }
+            
+            if (now - butterfly.lastMoveTime > 150) {
+                butterfly.lastMoveTime = now;
+                
+                if (Math.random() < 0.2) {
+                    butterfly.moveDirection.x = Math.random() > 0.5 ? 1 : -1;
+                }
+                if (Math.random() < 0.2) {
+                    butterfly.moveDirection.y = Math.random() > 0.5 ? 1 : -1;
+                }
+                
+                let newX = butterfly.x + butterfly.moveDirection.x * box;
+                let newY = butterfly.y + butterfly.moveDirection.y * box;
+                
+                if (newX < 0) {
+                    newX = 0;
+                    butterfly.moveDirection.x = 1;
+                } else if (newX >= canvas.width - box) {
+                    newX = canvas.width - box;
+                    butterfly.moveDirection.x = -1;
+                }
+                
+                if (newY < 0) {
+                    newY = 0;
+                    butterfly.moveDirection.y = 1;
+                } else if (newY >= canvas.height - box) {
+                    newY = canvas.height - box;
+                    butterfly.moveDirection.y = -1;
+                }
+                
+                butterfly.x = newX;
+                butterfly.y = newY;
+            }
+        }
+        
         function updateSnakePosition() {
             const head = {x: snake[0].x, y: snake[0].y};
             
@@ -389,13 +465,11 @@
             if (direction === 'UP') head.y -= box;
             if (direction === 'DOWN') head.y += box;
             
-            // Boundary checks con wrap-around
             if (head.x < 0) head.x = canvas.width - box;
             else if (head.x >= canvas.width) head.x = 0;
             if (head.y < 0) head.y = canvas.height - box;
             else if (head.y >= canvas.height) head.y = 0;
             
-            // Check collision with self
             if (snake.some((segment, index) => index > 0 && segment.x === head.x && segment.y === head.y)) {
                 gameOver = true;
                 return false;
@@ -407,26 +481,69 @@
         
         function checkFoodCollision() {
             const head = snake[0];
+            let scoreChanged = false;
+            let pointsGained = false;
+            let pointsLost = false;
             
             if (checkCollision(head, food)) {
                 score++;
+                scoreChanged = true;
+                pointsGained = true;
                 food = createFood();
-                if (Math.random() < 0.2) {
+                // Only spawn new special food if there isn't one already
+                if (!specialFood && !butterfly && Math.random() < INSECT_SPAWN_CHANCE) {
                     specialFood = createSpecialFood();
                 }
-                return true;
             } 
             
             if (specialFood && checkCollision(head, specialFood)) {
-                score += specialFood.type === 'donut' ? 3 : 5;
-                for (let i = 0; i < (specialFood.type === 'donut' ? 3 : 4); i++) {
-                    snake.push({...snake[snake.length-1]});
+                if (specialFood.type === 'donut') {
+                    score += 3;
+                    pointsGained = true;
+                    for (let i = 0; i < 3; i++) {
+                        snake.push({...snake[snake.length-1]});
+                    }
+                } else if (specialFood.type === 'insect') {
+                    score += 5;
+                    pointsGained = true;
+                    butterfly = {
+                        x: specialFood.x,
+                        y: specialFood.y,
+                        spawnTime: Date.now(),
+                        lastMoveTime: Date.now(),
+                        moveDirection: {
+                            x: Math.random() > 0.5 ? 1 : -1,
+                            y: Math.random() > 0.5 ? 1 : -1
+                        }
+                    };
                 }
+                scoreChanged = true;
                 specialFood = null;
-                return true;
             }
             
-            return false;
+            if (butterfly && checkCollision(head, butterfly)) {
+                score = Math.max(0, score - 5);
+                scoreChanged = true;
+                pointsLost = true;
+                butterfly = null;
+            }
+            
+            if (scoreChanged) {
+                lastScoreChangeTime = Date.now();
+                if (pointsGained) {
+                    scoreDisplay.classList.add('gain');
+                    setTimeout(() => {
+                        scoreDisplay.classList.remove('gain');
+                    }, 500);
+                } else if (pointsLost) {
+                    scoreDisplay.classList.add('loss');
+                    setTimeout(() => {
+                        scoreDisplay.classList.remove('loss');
+                    }, 500);
+                }
+            }
+            
+            return scoreChanged;
         }
         
         function updateScore() {
@@ -445,6 +562,9 @@
             if (specialFood) {
                 if (specialFood.type === 'donut') drawDonut();
                 else drawInsect();
+            }
+            if (butterfly) {
+                drawButterfly();
             }
             drawSnake();
         }
@@ -654,7 +774,7 @@
             const timeSinceSpawn = Date.now() - specialFood.spawnTime;
             let scale = 1;
             
-            if (timeSinceSpawn <= 3000) {
+            if (timeSinceSpawn <= 10000) {
                 scale = 1 + Math.sin(Date.now() / 100) * 0.3;
             }
             
@@ -665,7 +785,7 @@
             ctx.save();
             ctx.translate(specialFood.x + box/2, specialFood.y + box/2);
             
-            if (timeSinceSpawn <= 3000) {
+            if (timeSinceSpawn <= 10000) {
                 ctx.shadowColor = 'rgba(0,0,0,0.5)';
                 ctx.shadowBlur = 5;
                 ctx.shadowOffsetX = 2;
@@ -673,6 +793,30 @@
             }
             
             ctx.fillText('🐛', 0, 0);
+            ctx.restore();
+            ctx.shadowColor = 'transparent';
+        }
+        
+        function drawButterfly() {
+            if (!butterfly) return;
+            
+            const timeSinceSpawn = Date.now() - butterfly.spawnTime;
+            const wingFlap = Math.sin(Date.now() / 100) * 0.1;
+            
+            ctx.font = `${box}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.save();
+            ctx.translate(butterfly.x + box/2, butterfly.y + box/2);
+            ctx.rotate(wingFlap);
+            
+            ctx.shadowColor = 'rgba(255,255,255,0.3)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            ctx.fillText('🦋', 0, 0);
             ctx.restore();
             ctx.shadowColor = 'transparent';
         }
@@ -717,10 +861,32 @@
             
             if (specialFood && specialFood.type === 'insect') {
                 moveInsect();
+                
+                // Transform to butterfly after 10 seconds if not eaten
+                const timeSinceSpawn = Date.now() - specialFood.spawnTime;
+                if (timeSinceSpawn > 10000 && !specialFood.transformed) {
+                    specialFood.transformed = true;
+                    butterfly = {
+                        x: specialFood.x,
+                        y: specialFood.y,
+                        spawnTime: Date.now(),
+                        lastMoveTime: Date.now(),
+                        moveDirection: {
+                            x: Math.random() > 0.5 ? 1 : -1,
+                            y: Math.random() > 0.5 ? 1 : -1
+                        }
+                    };
+                    specialFood = null;
+                }
             }
             
-            if (specialFood && Date.now() - specialFood.spawnTime > 13000) {
+            // Remove special food after 13 seconds if not transformed
+            if (specialFood && Date.now() - specialFood.spawnTime > 13000 && !specialFood.transformed) {
                 specialFood = null;
+            }
+            
+            if (butterfly) {
+                moveButterfly();
             }
             
             updateScore();
