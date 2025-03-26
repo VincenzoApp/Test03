@@ -289,6 +289,14 @@
 
         function setGameMode(mode) {
             gameMode = mode;
+            // Reset scores when changing game mode
+            scoreX = 0;
+            scoreO = 0;
+            scoreDraws = 0;
+            lastWinner = null;
+            updateScoreDisplays();
+            saveScores();
+            
             resetGame();
             document.getElementById('mode-1v1').classList.toggle('selected', mode === '1v1');
             document.getElementById('mode-1vAI').classList.toggle('selected', mode === '1vAI');
