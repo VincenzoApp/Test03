@@ -48,10 +48,11 @@
         
         #game-board {
             display: grid;
+            position: relative;
             grid-template-columns: repeat(3, minmax(80px, 1fr));
             grid-template-rows: repeat(3, minmax(80px, 1fr));
             gap: 5px;
-            margin: 20px auto;
+            margin: 41px 0px 0px 0px;
             width: 100%;
             max-width: 400px;
             touch-action: manipulation;
@@ -160,7 +161,8 @@
         
         #aiDifficultySelection {
             display: none;
-            margin: -12px 0px -9px 0px;
+            margin: -12px 0px -32px 0px;
+            position: relative;
         }
         
         #offline-status {
