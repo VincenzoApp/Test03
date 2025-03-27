@@ -241,6 +241,10 @@
         const GRID_COLS = 20;
         const GRID_ROWS = 32;
         const INSECT_SPAWN_CHANCE = 0.35;
+        const MAX_DIAMONDS = 2;
+        const DIAMOND_FIRST_SPAWN_TIME = 60000; // 1 minute in ms
+        const DIAMOND_SPAWN_INTERVAL = 30000; // 30 seconds in ms
+        const DIAMOND_LIFETIME = 15000; // 15 seconds in ms
         
         // Variables de estado
         let box, canvasWidth, canvasHeight;
@@ -256,6 +260,10 @@
         let lastRenderTime = 0;
         let butterfly = null;
         let lastScoreChangeTime = 0;
+        let diamond = null;
+        let gameStartTime = 0;
+        let diamondsSpawned = 0;
+        let nextDiamondSpawnTime = DIAMOND_FIRST_SPAWN_TIME;
 
         // Inicialización del juego
         function initGame() {
@@ -294,8 +302,12 @@
             food = createFood();
             specialFood = null;
             butterfly = null;
+            diamond = null;
             score = 0;
             gameOver = false;
+            diamondsSpawned = 0;
+            gameStartTime = Date.now();
+            nextDiamondSpawnTime = DIAMOND_FIRST_SPAWN_TIME;
             
             scoreDisplay.textContent = score;
             highscoreDisplay.textContent = highscore;
@@ -331,6 +343,11 @@
                     overlapping = overlapping || 
                         (newFood.x === butterfly.x && newFood.y === butterfly.y);
                 }
+                
+                if (diamond) {
+                    overlapping = overlapping || 
+                        (newFood.x === diamond.x && newFood.y === diamond.y);
+                }
             } while (overlapping);
             
             return newFood;
@@ -365,9 +382,44 @@
                     overlapping = overlapping || 
                         (newSpecialFood.x === butterfly.x && newSpecialFood.y === butterfly.y);
                 }
+                
+                if (diamond) {
+                    overlapping = overlapping || 
+                        (newSpecialFood.x === diamond.x && newSpecialFood.y === diamond.y);
+                }
             } while (overlapping);
             
             return newSpecialFood;
+        }
+        
+        function createDiamond() {
+            let newDiamond;
+            let overlapping;
+            
+            do {
+                newDiamond = {
+                    x: Math.floor(Math.random() * (GRID_COLS - 2)) * box + box,
+                    y: Math.floor(Math.random() * (GRID_ROWS - 2)) * box + box,
+                    spawnTime: Date.now()
+                };
+                
+                overlapping = snake.some(segment => 
+                    segment.x === newDiamond.x && segment.y === newDiamond.y
+                ) || (food.x === newDiamond.x && food.y === newDiamond.y);
+                
+                if (specialFood) {
+                    overlapping = overlapping || 
+                        (newDiamond.x === specialFood.x && newDiamond.y === specialFood.y);
+                }
+                
+                if (butterfly) {
+                    overlapping = overlapping || 
+                        (newDiamond.x === butterfly.x && newDiamond.y === butterfly.y);
+                }
+            } while (overlapping);
+            
+            diamondsSpawned++;
+            return newDiamond;
         }
         
         function checkCollision(head, foodItem) {
@@ -417,7 +469,6 @@
             const now = Date.now();
             const timeSinceSpawn = now - butterfly.spawnTime;
             
-            // Changed from 3000 to 7000 (7 seconds)
             if (timeSinceSpawn > 7000) {
                 butterfly = null;
                 return;
@@ -504,7 +555,7 @@
                         snake.push({...snake[snake.length-1]});
                     }
                 } else if (specialFood.type === 'insect') {
-                    score += 5;
+                    score += 15; 
                     pointsGained = true;
                     butterfly = {
                         x: specialFood.x,
@@ -522,10 +573,17 @@
             }
             
             if (butterfly && checkCollision(head, butterfly)) {
-                score = Math.max(0, score - 5);
+                score = Math.max(0, score - 5); // Butterfly gives -5 points
                 scoreChanged = true;
                 pointsLost = true;
                 butterfly = null;
+            }
+            
+            if (diamond && checkCollision(head, diamond)) {
+                score += 100; // Diamond gives +100 points
+                scoreChanged = true;
+                pointsGained = true;
+                diamond = null;
             }
             
             if (scoreChanged) {
@@ -565,6 +623,9 @@
             }
             if (butterfly) {
                 drawButterfly();
+            }
+            if (diamond) {
+                drawDiamond();
             }
             drawSnake();
         }
@@ -821,6 +882,29 @@
             ctx.shadowColor = 'transparent';
         }
         
+        function drawDiamond() {
+            if (!diamond) return;
+            
+            const timeSinceSpawn = Date.now() - diamond.spawnTime;
+            const pulse = Math.sin(Date.now() / 200) * 0.1 + 1;
+            
+            ctx.font = `${box * pulse}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.save();
+            ctx.translate(diamond.x + box/2, diamond.y + box/2);
+            
+            ctx.shadowColor = 'rgba(0,255,255,0.7)';
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            ctx.fillText('💎', 0, 0);
+            ctx.restore();
+            ctx.shadowColor = 'transparent';
+        }
+        
         function showGameOver() {
             gameOverDisplay.style.display = 'block';
         }
@@ -887,6 +971,18 @@
             
             if (butterfly) {
                 moveButterfly();
+            }
+            
+            // Handle diamond spawning and expiration
+            const gameTime = Date.now() - gameStartTime;
+            
+            if (!diamond && diamondsSpawned < MAX_DIAMONDS && gameTime >= nextDiamondSpawnTime) {
+                diamond = createDiamond();
+                nextDiamondSpawnTime = gameTime + DIAMOND_SPAWN_INTERVAL;
+            }
+            
+            if (diamond && Date.now() - diamond.spawnTime > DIAMOND_LIFETIME) {
+                diamond = null;
             }
             
             updateScore();
